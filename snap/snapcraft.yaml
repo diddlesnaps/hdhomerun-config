@@ -1,0 +1,40 @@
+name: hdhomerun-config
+version: '20170930'
+summary: HDHomeRun Config
+description: HDHomeRun Config
+
+grade: stable
+confinement: strict
+
+apps:
+  hdhomerun-config:
+    command: usr/bin/hdhomerun_config
+    plugs:
+    - network
+
+  gui:
+    command: desktop-launch $SNAP/usr/bin/hdhomerun_config_gui
+    plugs:
+    - network
+    - desktop
+    - desktop-legacy
+    - wayland
+    - x11
+
+parts:
+  hdhomerun-gui:
+    after: [desktop-gtk2]
+    plugin: autotools
+    source: http://download.silicondust.com/hdhomerun/hdhomerun_config_gui_20170930.tgz
+    prepare: |
+      curl -L -s http://download.silicondust.com/hdhomerun/libhdhomerun_20170930.tgz | tar zx
+      for file in Makefile.am Makefile.in src/Makefile.am src/Makefile.in; do
+        sed -E -i 's|../libhdhomerun|libhdhomerun|g' $file
+      done
+    configflags:
+    - --prefix=/usr
+    build-packages:
+    - gettext
+    - libgtk2.0-dev
+    stage-packages:
+    - libgtk2.0-0
